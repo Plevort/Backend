@@ -5,9 +5,9 @@ const connectmongodb = require('./mongodb.js');
 // Connect to mongodb
 connectmongodb();
 
-fastify.get('/', function handler (request, reply) {
-  reply.send({ hello: 'world' })
-})
+// /
+const RootRoute = require('./v1/root/root.js');
+fastify.register(RootRoute);
 
 // Run the server
 fastify.listen({ port: 3000 }, (err) => {
