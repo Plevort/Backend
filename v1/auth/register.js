@@ -2,12 +2,14 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../schemas/user');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken'); 
 const dotenv = require('dotenv').config();
 
-async function registerRoutes(fastify, options) {
+async function registerRoute(fastify, options) {
     fastify.post('/v1/register', async (request, reply) => {
       const { email, username, password, passwordConfirm } = request.body;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
       if (!emailRegex.test(email)) {
         return reply.code(400).send({ error: 'Invalid email format' });
       }
@@ -26,10 +28,10 @@ async function registerRoutes(fastify, options) {
         const existingUser = await User.findOne({ 
           $or: [
             { email }, 
-            { username:{$regex: new RegExp(`^${username}$`, 'i')}}
+            { username: { $regex: new RegExp(`^${username}$`, 'i') } }
           ] 
         });
-  
+
         if (existingUser) {
           if (existingUser.email === email) {
             return reply.code(400).send({ error: 'Email is already taken' });
@@ -38,13 +40,11 @@ async function registerRoutes(fastify, options) {
             return reply.code(400).send({ error: 'Username is already taken' });
           }
         }
-  
+
         const uniqueId = uuidv4();
-  
         const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
-  
         const hashedPassword = await bcrypt.hash(password + process.env.BCRYPT_SECRET_PASSWORD, saltRounds);
-  
+
         const newUser = new User({
           uniqueId,
           email,
@@ -52,11 +52,17 @@ async function registerRoutes(fastify, options) {
           password: hashedPassword,
           displayName: username,
         });
-  
+
         await newUser.save();
-  
+
+        const token = jwt.sign({ uniqueId: newUser.uniqueId, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        newUser.token = token;
+        await newUser.save();
+
         reply.code(201).send({
           message: 'User registered successfully',
+          token, 
           user: {
             uniqueId: newUser.uniqueId,
             email: newUser.email,
@@ -66,7 +72,7 @@ async function registerRoutes(fastify, options) {
         });
       } catch (error) {
         console.error('Error while registering user:', error);
-  
+
         if (error.name === 'ValidationError') {
           return reply.code(400).send({ error: error.message });
         }
@@ -74,10 +80,8 @@ async function registerRoutes(fastify, options) {
         reply.code(500).send({ error: 'Internal Server Error' });
       }
     });
-  }
-  
-  
-  
+}
+
 function isValidPassword(password) {
   const minLength = 8;
   const hasUppercase = /[A-Z]/.test(password);
@@ -87,4 +91,4 @@ function isValidPassword(password) {
   return password.length >= minLength && hasUppercase && hasLowercase && hasNumbers && hasSpecialChars;
 }
 
-module.exports = registerRoutes;
+module.exports = registerRoute;

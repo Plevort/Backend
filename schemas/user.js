@@ -53,15 +53,19 @@ const userSchema = new mongoose.Schema({
       required: true,
       trim: true,
     },
+    token: { 
+      type: String,
+      required: false,
+    },
   }, {
     timestamps: true,
   });
   
-  userSchema.pre('save', function(next) {
+userSchema.pre('save', function(next) {
     this.username = this.username.toLowerCase();
     next();
-  });
+});
   
-  const User = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
   
-  module.exports = User;
+module.exports = User;
