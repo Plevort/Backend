@@ -1,0 +1,90 @@
+// /v1/auth/register.js
+const bcrypt = require('bcryptjs');
+const User = require('../../schemas/user');
+const { v4: uuidv4 } = require('uuid');
+const dotenv = require('dotenv').config();
+
+async function registerRoutes(fastify, options) {
+    fastify.post('/v1/register', async (request, reply) => {
+      const { email, username, password, passwordConfirm } = request.body;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return reply.code(400).send({ error: 'Invalid email format' });
+      }
+  
+      if (!isValidPassword(password)) {
+        return reply.code(400).send({
+          error: 'Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+        });
+      }
+  
+      if (password !== passwordConfirm) {
+        return reply.code(400).send({ error: 'Passwords do not match' });
+      }
+  
+      try {
+        const existingUser = await User.findOne({ 
+          $or: [
+            { email }, 
+            { username:{$regex: new RegExp(`^${username}$`, 'i')}}
+          ] 
+        });
+  
+        if (existingUser) {
+          if (existingUser.email === email) {
+            return reply.code(400).send({ error: 'Email is already taken' });
+          }
+          if (existingUser.username.toLowerCase() === username.toLowerCase()) {
+            return reply.code(400).send({ error: 'Username is already taken' });
+          }
+        }
+  
+        const uniqueId = uuidv4();
+  
+        const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
+  
+        const hashedPassword = await bcrypt.hash(password + process.env.BCRYPT_SECRET_PASSWORD, saltRounds);
+  
+        const newUser = new User({
+          uniqueId,
+          email,
+          username,
+          password: hashedPassword,
+          displayName: username,
+        });
+  
+        await newUser.save();
+  
+        reply.code(201).send({
+          message: 'User registered successfully',
+          user: {
+            uniqueId: newUser.uniqueId,
+            email: newUser.email,
+            username: newUser.username,
+            displayName: newUser.displayName,
+          },
+        });
+      } catch (error) {
+        console.error('Error while registering user:', error);
+  
+        if (error.name === 'ValidationError') {
+          return reply.code(400).send({ error: error.message });
+        }
+        
+        reply.code(500).send({ error: 'Internal Server Error' });
+      }
+    });
+  }
+  
+  
+  
+function isValidPassword(password) {
+  const minLength = 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  return password.length >= minLength && hasUppercase && hasLowercase && hasNumbers && hasSpecialChars;
+}
+
+module.exports = registerRoutes;
