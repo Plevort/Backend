@@ -1,11 +1,15 @@
+// /main.js
 const fastify = require('fastify')({ logger: true })
+const connectmongodb = require('./mongodb.js');
 
-// Declare a route
+// Connect to mongodb
+connectmongodb();
+
 fastify.get('/', function handler (request, reply) {
   reply.send({ hello: 'world' })
 })
 
-// Run the server!
+// Run the server
 fastify.listen({ port: 3000 }, (err) => {
   if (err) {
     fastify.log.error(err)

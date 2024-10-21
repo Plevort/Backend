@@ -30,6 +30,7 @@
   "homepage": "https://github.com/Plevort/Backend#readme",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "fastify": "^5.0.0"
+    "fastify": "^5.0.0",
+    "mongoose": "^8.7.2"
   }
 }
