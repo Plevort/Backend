@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/Plevort/Backend#readme",
   "dependencies": {
+    "@fastify/cors": "^10.0.1",
     "bcryptjs": "^2.4.3",
     "cloudflared": "^0.5.3",
     "dotenv": "^16.4.5",
