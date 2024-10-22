@@ -6,7 +6,7 @@ const verifyToken = require('../../middleware/verify.js');
 async function AddFriendRoute(fastify, options) {
     fastify.post('/v1/friend/add', { preHandler: verifyToken }, async function (request, reply) {
         const { username } = request.body;
-        const requesterId = request.user.uniqueId; 
+        const requesterId = request.user.uniqueId;
 
         if (!username) {
             return reply.code(400).send({ error: 'Username is required' });
@@ -26,12 +26,20 @@ async function AddFriendRoute(fastify, options) {
             }
 
             const existingRequest = await FriendRequest.findOne({
-                requester: requesterId,
-                requested: requestedId,
+                $or: [
+                    { requester: requesterId, requested: requestedId },
+                    { requester: requestedId, requested: requesterId } 
+                ]
             });
 
             if (existingRequest) {
-                return reply.code(400).send({ error: 'Friend request already sent' });
+                if (existingRequest.status === 'rejected') {
+                    existingRequest.status = 'pending';
+                    await existingRequest.save();
+                    return reply.code(200).send({ success: true, message: 'Friend request resent' });
+                }
+
+                return reply.code(400).send({ error: 'Friend request already sent or in progress' });
             }
 
             const newRequest = new FriendRequest({

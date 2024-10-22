@@ -42,6 +42,9 @@ fastify.register(AddFriendRoute);
 // /v1/friend/accept
 const AcceptFriendRoute = require('./v1/friend/accept.js');
 fastify.register(AcceptFriendRoute);
+// /v1/friend/decline
+const DeclineFriendRoute = require('./v1/friend/decline.js');
+fastify.register(DeclineFriendRoute);
 // Run the server
 fastify.listen({ port: 3000 }, (err) => {
   if (err) {
