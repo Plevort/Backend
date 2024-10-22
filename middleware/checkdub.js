@@ -1,4 +1,4 @@
-// /middleware/checkDub.js
+// /middleware/checkdub.js
 const User = require('../schemas/user');
 
 async function checkDuplicateId(req, res, next) {
