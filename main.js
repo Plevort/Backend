@@ -36,7 +36,12 @@ fastify.register(RegisterRoute);
 // /v1/login
 const LoginRoute = require('./v1/auth/login.js');
 fastify.register(LoginRoute);
-
+// /v1/friend/add
+const AddFriendRoute = require('./v1/friend/add.js');
+fastify.register(AddFriendRoute);
+// /v1/friend/accept
+const AcceptFriendRoute = require('./v1/friend/accept.js');
+fastify.register(AcceptFriendRoute);
 // Run the server
 fastify.listen({ port: 3000 }, (err) => {
   if (err) {

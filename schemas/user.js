@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: false,
     },
+    friends: { 
+      type: [String],
+      default: [],
+    }
   }, {
     timestamps: true,
   });
@@ -65,7 +69,7 @@ userSchema.pre('save', function(next) {
     this.username = this.username.toLowerCase();
     next();
 });
-  
+
 const User = mongoose.model('User', userSchema);
-  
+
 module.exports = User;

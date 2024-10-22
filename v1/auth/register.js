@@ -1,9 +1,9 @@
 // /v1/auth/register.js
 const bcrypt = require('bcryptjs');
 const User = require('../../schemas/user');
-const jwt = require('jsonwebtoken'); 
+const generateUniqueId = require('../../middleware/createid'); 
+const createToken = require('../../middleware/maketoken'); 
 const dotenv = require('dotenv').config();
-const generateUniqueId = require('../../middleware/createid.js'); // Import the ID creation middleware
 
 async function registerRoute(fastify, options) {
     fastify.post('/v1/register', async (request, reply) => {
@@ -25,11 +25,11 @@ async function registerRoute(fastify, options) {
         }
 
         try {
-            const existingUser = await User.findOne({ 
+            const existingUser = await User.findOne({
                 $or: [
-                    { email }, 
+                    { email },
                     { username: { $regex: new RegExp(`^${username}$`, 'i') } }
-                ] 
+                ]
             });
 
             if (existingUser) {
@@ -41,7 +41,6 @@ async function registerRoute(fastify, options) {
                 }
             }
 
-            // Use the generateUniqueId function to get a unique ID
             const uniqueId = await generateUniqueId();
 
             const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
@@ -57,14 +56,14 @@ async function registerRoute(fastify, options) {
 
             await newUser.save();
 
-            const token = jwt.sign({ uniqueId: newUser.uniqueId, email: newUser.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const token = createToken(newUser.uniqueId, newUser.email);
 
             newUser.token = token;
             await newUser.save();
 
             reply.code(201).send({
                 message: 'User registered successfully',
-                token, 
+                token,
                 user: {
                     uniqueId: newUser.uniqueId,
                     email: newUser.email,
@@ -78,7 +77,7 @@ async function registerRoute(fastify, options) {
             if (error.name === 'ValidationError') {
                 return reply.code(400).send({ error: error.message });
             }
-            
+
             reply.code(500).send({ error: 'Internal Server Error' });
         }
     });
