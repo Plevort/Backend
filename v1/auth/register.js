@@ -1,10 +1,9 @@
 // /v1/auth/register.js
 const bcrypt = require('bcryptjs');
 const User = require('../../schemas/user');
-const crypto = require('crypto'); 
 const jwt = require('jsonwebtoken'); 
 const dotenv = require('dotenv').config();
-const checkDuplicateId = require('../../middleware/checkdub.js'); 
+const generateUniqueId = require('../../middleware/createid.js'); // Import the ID creation middleware
 
 async function registerRoute(fastify, options) {
     fastify.post('/v1/register', async (request, reply) => {
@@ -42,12 +41,8 @@ async function registerRoute(fastify, options) {
                 }
             }
 
-            let uniqueId;
-            let isDuplicate;
-            do {
-                uniqueId = generateUniqueId(); 
-                isDuplicate = await checkDuplicateId({ body: { uniqueId } }, reply, () => {});
-            } while (isDuplicate);
+            // Use the generateUniqueId function to get a unique ID
+            const uniqueId = await generateUniqueId();
 
             const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
             const hashedPassword = await bcrypt.hash(password + process.env.BCRYPT_SECRET_PASSWORD, saltRounds);
@@ -96,12 +91,6 @@ function isValidPassword(password) {
     const hasNumbers = /\d/.test(password);
     const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
     return password.length >= minLength && hasUppercase && hasLowercase && hasNumbers && hasSpecialChars;
-}
-
-//64 bit
-function generateUniqueId() {
-    const randomBytes = crypto.randomBytes(8);
-    return BigInt('0x' + randomBytes.toString('hex'));
 }
 
 module.exports = registerRoute;
