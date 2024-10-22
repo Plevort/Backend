@@ -32,6 +32,7 @@
     "@fastify/cors": "^10.0.1",
     "bcryptjs": "^2.4.3",
     "cloudflared": "^0.5.3",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "fastify": "^5.0.0",
     "fastify-ip": "^1.1.0",
