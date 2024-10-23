@@ -3,16 +3,16 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const http = require('http');
-const socketIO = require('socket.io');
 const connectMongoDB = require('./mongodb.js');
 const verifyToken = require('./middleware/verify.js');
+const initializeSocket = require('./socket.js'); 
 
-//express
+// express
 const app = express();
 app.use(express.json());
-//because cloudflared
+// because cloudflared
 app.set('trust proxy', true);
-//logging
+// logging
 app.use(morgan('combined'));
 const server = http.createServer(app);
 
@@ -21,29 +21,28 @@ connectMongoDB();
 
 // Fix CORS
 app.use(cors({
-  origin: '*',  // Update to specific origins in production
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
 
+// socket.io
+const io = initializeSocket(server);
 
-
-// /v1/login
+// Routes
 const LoginRoute = require('./v1/auth/login.js');
 app.use('/v1/', LoginRoute);
-// /v1/register
 const RegisterRoute = require('./v1/auth/register.js');
 app.use('/v1/', RegisterRoute);
-// /v1/friend/add
 const AddFriendRoute = require('./v1/friend/add.js');
 app.use('/v1/friend/', AddFriendRoute);
-// /v1/friend/accept
 const AcceptFriendRoute = require('./v1/friend/accept.js');
 app.use('/v1/friend/', AcceptFriendRoute);
-// /v1/friend/decline
 const DeclineFriendRoute = require('./v1/friend/decline.js');
 app.use('/v1/friend/', DeclineFriendRoute);
+const FriendsRoute = require('./v1/friend/friends.js');
+app.use('/v1/friend/', FriendsRoute);
 
 // Start the server
 const PORT = 3000;
