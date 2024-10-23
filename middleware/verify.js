@@ -2,26 +2,26 @@
 const jwt = require('jsonwebtoken');
 const User = require('../schemas/user.js');
 
-async function verifyToken(request, reply) {
-  const token = request.headers['authorization']?.split(' ')[1];
+async function verifyToken(req, res, next) {
+    const token = req.headers['authorization']?.split(' ')[1];
 
-  if (!token) {
-    return reply.code(403).send({ error: 'Access denied, token missing!' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    const user = await User.findOne({ uniqueId: decoded.uniqueId });
-
-    if (!user || user.token !== token) {
-      return reply.code(401).send({ error: 'Invalid token' });
+    if (!token) {
+        return res.status(403).json({ error: 'Access denied, token missing!' });
     }
 
-    request.user = decoded;
-  } catch (err) {
-    return reply.code(401).send({ error: 'Invalid token' });
-  }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findOne({ uniqueId: decoded.uniqueId });
+
+        if (!user || user.token !== token) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        req.user = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
 }
 
 module.exports = verifyToken;
