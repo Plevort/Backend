@@ -43,3 +43,5 @@ router.get('/list', verifyToken, async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching chat list.' });
     }
 });
+
+module.exports = router;
