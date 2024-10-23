@@ -19,8 +19,8 @@
     "backend",
     "chat-application",
     "chatapp",
-    "fastifyjs",
-    "fastify"
+    "express",
+    "expressjs"
   ],
   "author": "Plevort",
   "license": "CC0-1.0",
