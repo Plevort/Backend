@@ -1,15 +1,13 @@
 // /socket.js
 const socketIO = require('socket.io');
 const jwt = require('jsonwebtoken');
-
-let connectedClients = 0;
+const Chat = require('./schemas/chat'); // Adjust path as necessary
 
 function initializeSocket(server) {
     const io = socketIO(server);
 
     io.on('connection', (socket) => {
-        connectedClients++;
-        console.log(`[${connectedClients}] Connected`);
+        console.log('A user connected');
 
         socket.on('authenticate', (token) => {
             jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
@@ -18,20 +16,23 @@ function initializeSocket(server) {
                     console.log('Disconnected: Invalid token');
                     return;
                 }
-                socket.user = { uniqueId: decoded.uniqueId, token };
+                socket.user = { uniqueId: decoded.uniqueId };
                 console.log(`User ${decoded.uniqueId} authenticated`);
-
-                io.emit('user_connected', { uniqueId: decoded.uniqueId });
+                
+                // Listen for changes in chat
+                Chat.watch().on('change', (change) => {
+                    // Emit an event to the user or to all connected clients
+                    io.to(socket.user.uniqueId).emit('chat_update', change); // or io.to(socket.user.uniqueId).emit('chat_update', change);
+                });
             });
         });
 
         socket.on('disconnect', () => {
-            connectedClients--;
-            console.log(`[${connectedClients}] Disconnected`);
+            console.log('A user disconnected');
         });
     });
 
-    return io;
+    return io; // Return the initialized Socket.IO instance
 }
 
 module.exports = initializeSocket;

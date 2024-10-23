@@ -9,7 +9,7 @@ const chatSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['d', 'g', 's'],
+        enum: ['d', 'g', 's'], //d = direct message, g = group, s = server
         required: true,
     },
     name: {

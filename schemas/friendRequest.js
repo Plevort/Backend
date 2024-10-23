@@ -7,11 +7,11 @@ const friendRequestSchema = new mongoose.Schema({
         required: true,
     },
     requester: {
-        type: Number,
+        type: String,
         required: true,
     },
     requested: {
-        type: Number,
+        type: String,
         required: true,
     },
     status: {

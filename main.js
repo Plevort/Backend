@@ -5,14 +5,12 @@ const cors = require('cors');
 const http = require('http');
 const connectMongoDB = require('./mongodb.js');
 const verifyToken = require('./middleware/verify.js');
-const initializeSocket = require('./socket.js'); 
+const initializeSocket = require('./socket.js');
 
 // express
 const app = express();
 app.use(express.json());
-// because cloudflared
 app.set('trust proxy', true);
-// logging
 app.use(morgan('combined'));
 const server = http.createServer(app);
 
@@ -43,8 +41,12 @@ const DeclineFriendRoute = require('./v1/friend/decline.js');
 app.use('/v1/friend/', DeclineFriendRoute);
 const FriendsRoute = require('./v1/friend/friends.js');
 app.use('/v1/friend/', FriendsRoute);
+const IncomingFriendsRoute = require('./v1/friend/incoming.js');
+app.use('/v1/friend/', IncomingFriendsRoute);
 const DirectmessageCreateRoute = require('./v1/createchat/directmessage.js');
 app.use('/v1/createchat/', DirectmessageCreateRoute);
+const ChatlistRoute = require('./v1/chat/list.js');
+app.use('/v1/chat/', ChatlistRoute);
 
 // Start the server
 const PORT = 3000;
