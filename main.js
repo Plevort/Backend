@@ -43,6 +43,8 @@ const DeclineFriendRoute = require('./v1/friend/decline.js');
 app.use('/v1/friend/', DeclineFriendRoute);
 const FriendsRoute = require('./v1/friend/friends.js');
 app.use('/v1/friend/', FriendsRoute);
+const DirectmessageCreateRoute = require('./v1/createchat/directmessage.js');
+app.use('/v1/createchat/', DirectmessageCreateRoute);
 
 // Start the server
 const PORT = 3000;

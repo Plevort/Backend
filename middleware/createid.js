@@ -1,4 +1,4 @@
-// /middleware/createId.js
+// /middleware/createid.js
 const crypto = require('crypto');
 const User = require('../schemas/user');
 
