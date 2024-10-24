@@ -47,8 +47,13 @@ const IncomingFriendsRoute = require('./v1/friend/incoming.js');
 app.use('/v1/friend/', IncomingFriendsRoute);
 const DirectmessageCreateRoute = require('./v1/createchat/directmessage.js');
 app.use('/v1/createchat/', DirectmessageCreateRoute);
-const ChatlistRoute = require('./v1/chat/list.js');
-app.use('/v1/chat/', ChatlistRoute);
+const { router: ChatlistRoute, initializeChatList } = require('./v1/chat/list.js');
+initializeChatList(io);
+app.use('/v1/chat/', ChatlistRoute, initializeChatList);
+const MessageSendRoute = require('./v1/message/send.js');
+app.use('/v1/message/', MessageSendRoute);
+const MessageReadRoute = require('./v1/message/read.js');
+app.use('/v1/message/', MessageReadRoute);
 
 // Start the server
 const PORT = 3000;

@@ -24,10 +24,6 @@ const chatSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
-    userIds: {
-        type: [String],
-        required: true,
-    },
     participants: [{
         userId: {
             type: String,
