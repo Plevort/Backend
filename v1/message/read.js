@@ -28,11 +28,12 @@ router.get('/read', verifyToken, async (req, res) => {
             return res.status(403).json({ error: 'User not a participant in the chat' });
         }
 
-        const skip = (page - 1) * 50; 
+        const skip = (page - 1) * 50;
         console.log(`Skipping messages: ${skip}`);
 
+        // Sort messages by 'createdAt' in descending order (newest first)
         const messages = await Message.find({ cid, ex: true })
-            .sort({ createdAt: 1 })
+            .sort({ createdAt: -1 }) // Sorting by newest first
             .skip(skip)
             .limit(50);
 
@@ -69,12 +70,12 @@ router.get('/read', verifyToken, async (req, res) => {
             }
         });
 
-        res.status(200).json({ page: page, messages: responseMessages });
+        // Reverse the response messages array to maintain proper order on the page
+        res.status(200).json({ page: page, messages: responseMessages.reverse() });
     } catch (error) {
         console.error('Error in /read route:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 
 module.exports = router;
