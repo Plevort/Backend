@@ -7,6 +7,7 @@ const connectMongoDB = require('./mongodb.js');
 const verifyToken = require('./middleware/verify.js');
 const initializeSocket = require('./socket.js');
 
+
 // express
 const app = express();
 app.use(express.json());
@@ -27,6 +28,7 @@ app.use(cors({
 
 // socket.io
 const io = initializeSocket(server);
+app.set('socketio', io);
 
 // Routes
 const LoginRoute = require('./v1/auth/login.js');

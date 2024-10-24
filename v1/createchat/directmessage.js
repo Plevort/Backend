@@ -30,12 +30,23 @@ router.post('/directmessage', verifyToken, async (req, res) => {
     try {
         const existingChat = await Chat.findOne({
             type: 'd',
-            participants: { $elemMatch: { userId: requestingUser.uniqueId } },
-            participants: { $elemMatch: { userId: recipientUser.uniqueId } },
+            participants: {
+                $all: [
+                    { $elemMatch: { userId: requestingUser.uniqueId } },
+                    { $elemMatch: { userId: recipientUser.uniqueId } }
+                ]
+            }
         });
 
         if (existingChat) {
-            return res.status(200).json({ success: true, chatId: existingChat.id.toString() });
+            const lastMessage = existingChat.lastMessage || "";
+
+            const chatInfo = {
+                id: existingChat.id.toString(),
+                lastMessage,
+                name: recipientUser.displayName,
+            };
+            return res.status(200).json({ success: true, chatId: existingChat.id.toString(), chatInfo });
         }
 
         const chatId = await generateUniqueId();
@@ -46,18 +57,24 @@ router.post('/directmessage', verifyToken, async (req, res) => {
             participants: [
                 {
                     userId: requestingUser.uniqueId,
-                    role: null, 
+                    role: null,
                 },
                 {
                     userId: recipientUser.uniqueId,
-                    role: null, 
+                    role: null,
                 },
             ],
         });
 
         await newChat.save();
 
-        return res.status(201).json({ success: true, chatId: newChat.id.toString() });
+        const chatInfo = {
+            id: newChat.id.toString(),
+            lastMessage: "",
+            name: recipientUser.displayName,
+        };
+
+        return res.status(201).json({ success: true, chatId: newChat.id.toString(), chatInfo });
     } catch (error) {
         console.error('Error creating chat:', error);
         return res.status(500).json({ success: false, message: 'Server error.' });
