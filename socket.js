@@ -1,25 +1,24 @@
-// socket.js
+// /socket.js
 const { Server } = require('socket.io');
 
 function initializeSocket(server) {
     const io = new Server(server, {
         cors: {
-            origin: '*', 
-            methods: ['GET', 'POST'],
-            credentials: true,
+            origin: "*", 
+            methods: ["GET", "POST"]
         }
     });
 
     io.on('connection', (socket) => {
-        console.log(`New client connected: ${socket.id}`);
+        console.log('A user connected:', socket.id);
 
-        socket.on('message', (data) => {
-            console.log(`Message from ${socket.id}: ${data}`);
-            io.emit('message', data);
+        socket.on('joinChat', (chatId) => {
+            socket.join(chatId);
+            console.log(`User ${socket.id} joined chat: ${chatId}`);
         });
 
         socket.on('disconnect', () => {
-            console.log(`Client disconnected: ${socket.id}`);
+            console.log('User disconnected:', socket.id);
         });
     });
 

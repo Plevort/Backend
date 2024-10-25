@@ -6,9 +6,18 @@ const http = require('http');
 const connectMongoDB = require('./mongodb.js');
 const verifyToken = require('./middleware/verify.js');
 const initializeSocket = require('./socket.js');
+const redisClient = require('./redis.js');
+require('dotenv').config();
 
+if (!redisClient.isOpen) {
+    redisClient.connect()
+        .then(() => console.log('Connected to Redis'))
+        .catch(console.error);
+} else {
+    console.log('Redis client already connected');
+}
 
-// express
+// Express setup
 const app = express();
 app.use(express.json());
 app.set('trust proxy', true);
@@ -20,10 +29,10 @@ connectMongoDB();
 
 // Fix CORS
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
 }));
 
 // socket.io
@@ -49,14 +58,14 @@ const DirectmessageCreateRoute = require('./v1/createchat/directmessage.js');
 app.use('/v1/createchat/', DirectmessageCreateRoute);
 const { router: ChatlistRoute, initializeChatList } = require('./v1/chat/list.js');
 initializeChatList(io);
-app.use('/v1/chat/', ChatlistRoute, initializeChatList);
-const MessageSendRoute = require('./v1/message/send.js');
+app.use('/v1/chat/', ChatlistRoute);
+const MessageSendRoute = require('./v1/message/send.js')(io);
 app.use('/v1/message/', MessageSendRoute);
 const MessageReadRoute = require('./v1/message/read.js');
 app.use('/v1/message/', MessageReadRoute);
 
 // Start the server
-const PORT = 3000;
+const PORT = 8069;
 server.listen(PORT, () => {
-  console.info(`Server listening on http://localhost:${PORT}`);
+    console.info(`Server listening on http://localhost:${PORT}`);
 });

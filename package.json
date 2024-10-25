@@ -29,17 +29,15 @@
   },
   "homepage": "https://github.com/Plevort/Backend#readme",
   "dependencies": {
-    "@fastify/cors": "^10.0.1",
+    "express": "4.21.1",
     "bcryptjs": "^2.4.3",
     "cloudflared": "^0.5.3",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
-    "fastify": "^5.0.0",
-    "fastify-ip": "^1.1.0",
-    "fastify-rate-limit": "^5.8.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.2",
     "morgan": "^1.10.0",
+    "redis": "^4.7.0",
     "socket.io": "^4.8.0"
   }
 }
