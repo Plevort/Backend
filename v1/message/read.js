@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const { Message } = require('../../schemas/message'); 
 const Chat = require('../../schemas/chat'); 
+const User = require('../../schemas/user');
 const verifyToken = require('../../middleware/verify');
 const { decrypt } = require('../../middleware/ed'); 
 require('dotenv').config();
@@ -12,7 +13,6 @@ router.get('/read', verifyToken, async (req, res) => {
     const uid = req.user.uniqueId;
 
     try {
-
         const page = p && !isNaN(p) && p >= 1 ? parseInt(p) : 1;
 
         const chat = await Chat.findOne({ id: cid, exists: true });
@@ -35,14 +35,22 @@ router.get('/read', verifyToken, async (req, res) => {
             return res.status(200).json({ page: page, messages: [] });
         }
 
+        const userIds = [...new Set(messages.map(msg => msg.uid))];
+
+        const users = await User.find({ uniqueId: { $in: userIds } }, 'uniqueId displayName');
+        const userDisplayNameMap = users.reduce((map, user) => {
+            map[user.uniqueId] = user.displayName;
+            return map;
+        }, {});
+
         const responseMessages = messages.map((msg, index) => {
             try {
                 const decryptedContent = decrypt(msg.cnt); 
-                
                 return {
                     index: skip + index + 1, 
                     mid: msg.mid,
                     uid: msg.uid,
+                    displayName: userDisplayNameMap[msg.uid] || 'Unknown',
                     cnt: decryptedContent,
                     createdAt: msg.createdAt
                 };
@@ -51,6 +59,7 @@ router.get('/read', verifyToken, async (req, res) => {
                     index: skip + index + 1, 
                     mid: msg.mid,
                     uid: msg.uid,
+                    displayName: userDisplayNameMap[msg.uid] || 'Unknown',
                     cnt: "Failed to decrypt",
                     createdAt: msg.createdAt
                 };
@@ -64,3 +73,4 @@ router.get('/read', verifyToken, async (req, res) => {
 });
 
 module.exports = router;
+
