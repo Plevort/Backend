@@ -8,22 +8,22 @@ const express = require('express');
 const router = express.Router(); 
 
 router.post('/register', async (req, res) => {
-    const { email, username, password, passwordConfirm } = req.body;
+    const { email, username, password, passwordconfirm } = req.body;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
-        return res.status(400).json({ success: false, error: 'Invalid email format' });
+        return res.status(400).json({ success: false, message: 'Invalid email format' });
     }
 
     if (!isValidPassword(password)) {
         return res.status(400).json({
             success: false,
-            error: 'Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+            message: 'Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character.',
         });
     }
 
-    if (password !== passwordConfirm) {
-        return res.status(400).json({ success: false, error: 'Passwords do not match' });
+    if (password !== passwordconfirm) {
+        return res.status(400).json({ success: false, message: 'Passwords do not match' });
     }
 
     try {
@@ -79,10 +79,10 @@ router.post('/register', async (req, res) => {
         console.error('Error while registering user:', error);
 
         if (error.name === 'ValidationError') {
-            return res.status(400).json({ success: false, error: error.message });
+            return res.status(400).json({ success: false, message: error.message });
         }
 
-        return res.status(500).json({ success: false, error: 'Internal Server Error' });
+        return res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 });
 

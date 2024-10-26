@@ -11,25 +11,27 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Email and password are required' });
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ success: false, error: 'Invalid email or password' });
+      return res.status(400).json({ success: false, message: 'Invalid email or password' });
     }
 
     const isPasswordValid = await bcrypt.compare(password + process.env.BCRYPT_SECRET_PASSWORD, user.password);
 
     if (!isPasswordValid) {
-      return res.status(400).json({ success: false, error: 'Invalid email or password' });
+      return res.status(400).json({ success: false, message: 'Invalid email or password' });
     }
 
-    const token = createToken(user.uniqueId, user.email);
-
-    user.token = token;
-    await user.save(); 
+    let token = user.token;
+    if (!token) {
+      token = createToken(user.uniqueId, user.email);
+      user.token = token;
+      await user.save();
+    }
 
     return res.status(200).json({
       success: true,
